@@ -1,0 +1,2 @@
+Shell ausführbar machen: chmod +x target.sh
+. der Path Variable hinzufügen: PATH=$PATH:.
