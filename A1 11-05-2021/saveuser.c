@@ -20,7 +20,8 @@
 	Im Hintergrund dürften es aber deutlich mehr sein.
 */
 
-int main () {
+int main ()
+{
 	char a_acBuffer[BUFSIZE];
 
 	if (fgets(a_acBuffer, BUFSIZE, stdin) == 0) // https://www.tutorialspoint.com/c_standard_library/c_function_fgets.htm
