@@ -13,7 +13,7 @@ public class SimRace
 
         for (int i = 0; i < RennFahrer; i++)
         {
-            (fahrer[i] = new SimRace.Car(i, fahrer_seeds.nextInt())).start();
+            fahrer[i].start();
         }
 
         for (int i = 0; i < RennFahrer; i++)
