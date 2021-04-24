@@ -9,23 +9,21 @@ public class SimRace
     public static void main(String[] args)
     {
         Car[] fahrer = new Car[RennFahrer];
-        Thread[] threads = new Thread[RennFahrer];
         Random fahrer_seeds = new Random(System.currentTimeMillis());
 
         for (int i = 0; i < RennFahrer; i++)
         {
-            fahrer[i] = new SimRace.Car(i, fahrer_seeds.nextInt());
-            (threads[i] = new Thread(fahrer[i])).start();
+            (fahrer[i] = new SimRace.Car(i, fahrer_seeds.nextInt())).start();
         }
 
         for (int i = 0; i < RennFahrer; i++)
         {
             try
             {
-                threads[i].join();
+                fahrer[i].join();
             }
             catch (InterruptedException e)
-            {}
+            { e.printStackTrace(); }
         }
 
         Arrays.sort(fahrer);
@@ -38,7 +36,7 @@ public class SimRace
         }
     }
 
-    static class Car implements Runnable, Comparable<Car>
+    static class Car extends Thread implements Comparable<Car>
     {
         private int seed;
         public int wagen_nummer;
@@ -76,9 +74,7 @@ public class SimRace
                 }
             }
             catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
+            { e.printStackTrace(); }
 
             this.renn_zeit = (int)(System.nanoTime() - start_zeit);
         }
