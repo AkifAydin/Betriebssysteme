@@ -3,8 +3,8 @@ import java.util.Arrays;
 
 public class SimRace
 {
-    static int RennFahrer = 5;
-    static int RennRunden = 4;
+    static final int RennFahrer = 5;
+    static final int RennRunden = 4;
 
     public static void main(String[] args)
     {
