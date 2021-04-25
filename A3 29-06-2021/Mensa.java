@@ -2,7 +2,7 @@ import java.util.concurrent.locks.*;
 import java.util.stream.*;
 import java.util.Arrays;
 
-public class SimRace // Mensa
+public class Mensa
 {
     static final int KundenAnzahl = 10;
     static final int KassenAnzahl = 3;
