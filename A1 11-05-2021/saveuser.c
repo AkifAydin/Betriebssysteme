@@ -33,14 +33,14 @@ int main ()
 	// Remove linebreak by replacing it with the null terminator
 	int a_iStrLen = strlen(a_acBuffer);
 
-	if (a_iStrLen == 1)
+	if (a_iStrLen <= 1)
 	{
 		printf("Fehler beim einlesen des Dateinamen, dieser darf nicht leer sein!\n");
 		return -1;
 	}
 	else
 	{
-		a_acBuffer[a_iStrLen-1] = 0; 
+		a_acBuffer[a_iStrLen - 1] = 0; 
 	}
 
 	printf("Name der neuen Datei: %s\n", a_acBuffer);

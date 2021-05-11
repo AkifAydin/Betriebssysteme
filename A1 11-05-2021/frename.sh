@@ -22,7 +22,7 @@ ask_for_targetdir() {
 
 # This function asks the user for the string to append
 ask_for_appstring() {
-    echo "Please enter the strign to append:" 
+    echo "Please enter the string to append:" 
     read app_string
 }
 
@@ -54,7 +54,7 @@ case $2 in
         ask_for_appstring
         ;;
     *)
-        app_string=$1
+        app_string=$2
 esac
 
 # print start
@@ -66,13 +66,13 @@ echo "
 "
 
 # add wildcard
-target_dir="${target_dir}/*"
+target_dir="$target_dir/*"
 
 # iterate over each entry
 for f in $target_dir
 do
 	echo "Renaming entry $f to $f$app_string"
-    mv $f $f$app_string
+    mv "$f" "$f$app_string"
 done
 
 exit 0 

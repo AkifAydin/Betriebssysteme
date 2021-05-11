@@ -50,7 +50,7 @@ while true
 do
     # ping -c 1  : only pings once
     # >/dev/null : logs the output into an empty void
-    ping -c 1 $target_host >/dev/null
+    ping -c 1 $target_host &>/dev/null
     if [ $? -eq 0 ]
     then
         echo "$target_host OK"
