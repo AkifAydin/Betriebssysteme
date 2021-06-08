@@ -39,7 +39,7 @@ void read_command(char i_acCommand[], char i_acParams[])
 
 	if (fgets(a_acBuffer, sizeof(a_acBuffer), stdin) == 0) // https://www.tutorialspoint.com/c_standard_library/c_function_fgets.htm
 	{
-		printf("Fehler beim einlesen des Dateinamen!\n");
+		printf("Fehler beim einlesen des Befehls!\n");
 		return;
 	}
 
@@ -125,6 +125,7 @@ int main ()
 			else // a_iPID == 0, Child-Program branch
 			{
 				strlen(a_acParams) == 0 ? execlp(a_acCommand, a_acCommand, 0) : execlp(a_acCommand, a_acCommand, a_acParams, 0);
+				return true;
 			}
 		}
 	}
