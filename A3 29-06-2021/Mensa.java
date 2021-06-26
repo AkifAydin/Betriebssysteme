@@ -1,5 +1,4 @@
 import java.util.concurrent.locks.*;
-import java.util.stream.*;
 import java.util.Arrays;
 
 public class Mensa
@@ -7,21 +6,23 @@ public class Mensa
     static final int KundenAnzahl = 10;
     static final int KassenAnzahl = 3;
     static final int InterruptZeit = 5000;
+    static Kasse[] Kassen = null;
+    static ReentrantLock SchlangenLock = new ReentrantLock(true);
 
     public static void main(String[] args)
     {
-        Kasse[] kassen = new Kasse[KassenAnzahl];
+        Kassen = new Kasse[KassenAnzahl];
 
         for (int i = 0; i < KassenAnzahl; i++)
         {
-             kassen[i] = new Kasse(i + 1);
+            Kassen[i] = new Kasse(i + 1);
         }
 
-        Kunde[] kumden = Stream.generate(() -> new Kunde(kassen.clone())).limit(KundenAnzahl).toArray(Kunde[]::new);
+        Kunde[] kunden = new Kunde[KundenAnzahl];
 
         for (int i = 0; i < KundenAnzahl; i++)
         {
-            kumden[i].start();
+            (kunden[i] = new Kunde()).start();
         }
 
         try
@@ -38,7 +39,7 @@ public class Mensa
             {
                 try
                 {
-                    kumden[i].interrupt();
+                    kunden[i].interrupt();
                 }
                 catch (SecurityException e)
                 {
@@ -50,13 +51,13 @@ public class Mensa
 
     static class Kasse implements Comparable<Kasse>
     {
-        private ReentrantLock lock = new ReentrantLock();
-        private ReentrantLock schhlangen_lock = new ReentrantLock();
+        private ReentrantLock lock;
         private int kassen_nummer;
         private int anstehende_kunden;
 
         public Kasse(int kassen_nummer)
         {
+            this.lock = new ReentrantLock(true);
             this.kassen_nummer = kassen_nummer;
             this.anstehende_kunden = 0;
         }
@@ -68,58 +69,61 @@ public class Mensa
 
         public int getAnstehendeKunden()
         {
-            int schlange = 0;
-            this.schhlangen_lock.lock();
-            schlange = this.anstehende_kunden;
-            this.schhlangen_lock.unlock();
-            return schlange;
+            return this.anstehende_kunden;
         }
 
-        private void modifiziereKundenZeahler(int anzahl)
+        public void anstehen()
         {
-            this.schhlangen_lock.lock();
-            this.anstehende_kunden += anzahl;
-            this.schhlangen_lock.unlock();
+            System.out.println("Kunde stellt sich an Kasse " + this.kassen_nummer + " an");
+            this.anstehende_kunden++;
         }
 
         public void kundeAbfertigen()
         {
-            modifiziereKundenZeahler(1);
-            this.lock.lock();
             try
             {
+                this.lock.lock();
                 // Hier könnte Code-Logik sein, welche den Thread blockiert
+                Thread.sleep(10);
                 System.err.println("Kasse " + this.kassen_nummer + " kassiert ab!");
             }
+            catch (InterruptedException e) {}
             finally
             {
-                this.lock.unlock();
+                if (this.lock.isHeldByCurrentThread())
+                {
+                    this.lock.unlock();
+                }
+                this.anstehende_kunden--;
             }
-            modifiziereKundenZeahler(-1);
         }
     }
 
     static class Kunde extends Thread
     {
-        private Kasse[] kassen_liste;
-
-        public Kunde(Kasse[] kassen_liste)
-        {
-            this.kassen_liste = kassen_liste;
-        }
-
         public void run()
         {
             try
             {
                 while (!Thread.interrupted())
                 {
-                   Arrays.sort(kassen_liste);
-                   kassen_liste[0].kundeAbfertigen();
-                   Thread.sleep((int) (1000 * Math.random()));
+                    Kasse anstehendeKasse = null;
+                    SchlangenLock.lock();
+                    Arrays.sort(Kassen);
+                    (anstehendeKasse = Kassen[0]).anstehen();
+                    SchlangenLock.unlock();
+                    anstehendeKasse.kundeAbfertigen();
+                    Thread.sleep((int) (1000 * Math.random()));
                 }
             }
             catch (InterruptedException e) {}
+            finally
+            {
+                if (SchlangenLock.isHeldByCurrentThread())
+                {
+                    SchlangenLock.unlock();
+                }
+            }
         }
     }
 }
