@@ -1,15 +1,18 @@
+package com.company;
 
+
+import java.util.*;
 
 public class SmokerProblem {
-    static final int InterruptZeit = 5000;   
-    public final int MAX_IDLE_TIME = 100;
-    public final String TABACCO = "Tabak";
-    public final String PAPER = "Papier";
-    public final String LIGHTER = "Streichhoelzer";
+    public static final int InterruptZeit = 5000;
+    public static final int MAX_IDLE_TIME = 1000;
+    public static final String TABACCO = "Tabak";
+    public static final String PAPER = "Papier";
+    public static final String LIGHTER = "Streichhoelzer";
     static Table Tisch = new Table();
     static List<String> ZutatenListe = new ArrayList<String>();
 
-    public static void main() {
+    public static void main(String[] args) {
         ZutatenListe.add(TABACCO);
         ZutatenListe.add(PAPER);
         ZutatenListe.add(LIGHTER);
@@ -19,15 +22,15 @@ public class SmokerProblem {
 
         // Verbraucher - Threads erzeugen
         for (int i = 1; i <= ZutatenListe.size(); i++) {
-            Smoker smoker = new Consumer(ZutatenListe[i-1]);
-            smoker.setName("Raucher " + i + " (Hat " + ZutatenListe[i-1] + ")");
+            Smoker smoker = new Smoker(ZutatenListe.get(i-1));
+            smoker.setName("Raucher " + i + " (Hat " + ZutatenListe.get(i-1) + ")");
             consumerList.add(smoker);
             smoker.start();
         }
-        
+
         // Erzeuger - Threads erzeugen
         for (int i = 1; i <= 2; i++) {
-            Agent agent = new Producer();
+            Agent agent = new Agent();
             agent.setName("Agent " + i);
             producerList.add(agent);
             agent.start();
@@ -40,12 +43,12 @@ public class SmokerProblem {
             System.err.println("-------------------- ENDE -------------------");
 
             // Erzeuger - Threads stoppen
-            for (Producer current : producerList) {
+            for (Agent current : producerList) {
                 current.interrupt();
             }
 
             // Verbraucher - Threads stoppen
-            for (Consumer current : consumerList) {
+            for (Smoker current : consumerList) {
                 current.interrupt();
             }
 
@@ -53,11 +56,11 @@ public class SmokerProblem {
         }
     }
 
-    class Table {
+    static class  Table {
         private Set<String> ZutatenSet;
 
         Table() {
-            this.ZutatenSet = new Set<String>();
+            this.ZutatenSet = new TreeSet<String>();
         }
 
         /* Producer (Agent) rufen die Methode gebeZutaten auf */
@@ -78,7 +81,7 @@ public class SmokerProblem {
         public synchronized boolean verbraucheZutaten(String EigeneZutat) throws InterruptedException {
             while(this.ZutatenSet.size() == 0) {
                 this.wait(); // --> Warten in der Wait-Queue
-            } 
+            }
 
             if (!this.ZutatenSet.add(EigeneZutat)) { // Prüfen ob es nicht die gesuchten Zutaten sind
                 this.notifyAll();
@@ -89,15 +92,16 @@ public class SmokerProblem {
             System.err.println(Thread.currentThread().getName() + " bereitet sich eine Zigarette vor und raucht sie dann");
             Thread.sleep((int) (MAX_IDLE_TIME * Math.random()));
             this.ZutatenSet.clear();
+            System.err.println(Thread.currentThread().getName() + " hat genüsslich eine geraucht!");
 
             this.notifyAll();
             return true;
         }
     }
 
-    class Smoker extends Thread {
+    static class  Smoker extends Thread {
         private String EigeneZutat;
-        
+
         Smoker(String EigeneZutat) {
             this.EigeneZutat = EigeneZutat;
         }
@@ -106,10 +110,7 @@ public class SmokerProblem {
             try {
                 while (!isInterrupted()) {
                     System.err.println(this.getName() + " moechte auf den Tisch zugreifen!");
-                    if (currentBuffer.verbraucheZutaten(this.EigeneZutat, pause())) {
-                        System.err.println(this.getName() + " hat genüsslich eine geraucht!");
-                    }
-                    else {
+                    if (!Tisch.verbraucheZutaten(this.EigeneZutat)) {
                         System.err.println(this.getName() + " hatte leider nicht alle Zutaten und muss wieder warten!");
                     }
                 }
@@ -119,7 +120,7 @@ public class SmokerProblem {
         }
     }
 
-    class Agent extends Thread {
+    static class  Agent extends Thread {
         public void run() {
             try {
                 while (!isInterrupted()) {
@@ -127,8 +128,8 @@ public class SmokerProblem {
 
                     List<String> zutatencopy = new ArrayList<String>(ZutatenListe);
                     Collections.shuffle(zutatencopy);
- 
-                    currentBuffer.gebeZutaten(zutatencopy[0], zutatencopy[1]);
+
+                    Tisch.gebeZutaten(zutatencopy.get(0), zutatencopy.get(1));
                 }
             } catch (InterruptedException ex) {
                 System.err.println(this.getName() + " wurde erfolgreich interrupted!");
