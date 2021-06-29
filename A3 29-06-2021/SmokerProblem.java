@@ -78,14 +78,9 @@ public class SmokerProblem {
         }
 
         /* Consumer (Smoker) rufen die Methode verbraucheZutaten auf */
-        public synchronized boolean verbraucheZutaten(String EigeneZutat) throws InterruptedException {
-            while(this.ZutatenSet.size() == 0) {
+        public synchronized void verbraucheZutaten(String EigeneZutat) throws InterruptedException {
+            while(this.ZutatenSet.size() == 0 || !this.ZutatenSet.add(EigeneZutat)) {
                 this.wait(); // --> Warten in der Wait-Queue
-            }
-
-            if (!this.ZutatenSet.add(EigeneZutat)) { // Prüfen ob es nicht die gesuchten Zutaten sind
-                this.notifyAll();
-                return false;
             }
 
             // Es waren die gewollten Zutaten
@@ -95,7 +90,6 @@ public class SmokerProblem {
             System.err.println(Thread.currentThread().getName() + " hat genüsslich eine geraucht!");
 
             this.notifyAll();
-            return true;
         }
     }
 
@@ -110,9 +104,7 @@ public class SmokerProblem {
             try {
                 while (!isInterrupted()) {
                     System.err.println(this.getName() + " moechte auf den Tisch zugreifen!");
-                    if (!Tisch.verbraucheZutaten(this.EigeneZutat)) {
-                        System.err.println(this.getName() + " hatte leider nicht alle Zutaten und muss wieder warten!");
-                    }
+                    Tisch.verbraucheZutaten(this.EigeneZutat);
                 }
             } catch (InterruptedException ex) {
                 System.err.println(this.getName() + " wurde erfolgreich interrupted!");
